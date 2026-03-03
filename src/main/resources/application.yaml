@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: finance-tracker
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/finance_tracker
+    username: finance_user
+    password: finance_pass
+
+  flyway:
+    enabled: true
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
