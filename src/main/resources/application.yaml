@@ -3,7 +3,7 @@ spring:
     name: finance-tracker
 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:55432/finance_tracker
+    url: jdbc:postgresql://127.0.0.1:15432/finance_tracker
     username: finance_user
     password: finance_pass
 
