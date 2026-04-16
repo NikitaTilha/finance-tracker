@@ -8,10 +8,12 @@ import com.example.finance_tracker.service.TransactionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
@@ -35,8 +37,14 @@ public class TransactionController {
     }
 
     @GetMapping
-    public List<TransactionResponse> getAllTransactions(@PathVariable Long userId) {
-        return transactionService.getAllByUserId(userId);
+    public List<TransactionResponse> getAllTransactions(
+            @PathVariable Long userId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) @Size(min = 3, max = 3) String currency,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateFrom,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) OffsetDateTime dateTo
+    ) {
+        return transactionService.getAllByFilters(userId, categoryId, currency, dateFrom, dateTo);
     }
 
     @PutMapping("/{transactionId}")
@@ -60,10 +68,7 @@ public class TransactionController {
     @GetMapping("/balance")
     public BalanceResponse getBalance(
             @PathVariable Long userId,
-            @RequestParam
-            @NotBlank
-            @Size(min = 3, max = 3)
-            String currency
+            @RequestParam @NotBlank @Size(min = 3, max = 3) String currency
     ) {
         return transactionService.getBalance(userId, currency);
     }

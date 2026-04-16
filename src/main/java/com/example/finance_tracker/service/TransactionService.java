@@ -14,6 +14,7 @@ import com.example.finance_tracker.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.NoSuchElementException;
@@ -53,10 +54,40 @@ public class TransactionService {
         return TransactionMapper.toResponse(savedTransaction);
     }
 
-    public List<TransactionResponse> getAllByUserId(Long userId) {
+    public List<TransactionResponse> getAllByFilters(
+            Long userId,
+            Long categoryId,
+            String currency,
+            OffsetDateTime dateFrom,
+            OffsetDateTime dateTo
+    ) {
         getUserOrThrow(userId);
 
-        return transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId)
+        if (categoryId != null) {
+            categoryRepository.findByIdAndUser_Id(categoryId, userId)
+                    .orElseThrow(() -> new NoSuchElementException("Категория не найдена"));
+        }
+
+        if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
+            throw new IllegalStateException("dateFrom не может быть позже dateTo");
+        }
+
+        if (categoryId == null && currency == null && dateFrom == null && dateTo == null) {
+            return transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId)
+                    .stream()
+                    .map(TransactionMapper::toResponse)
+                    .toList();
+        }
+
+        String normalizedCurrency = currency == null ? null : normalizeCurrency(currency);
+
+        return transactionRepository.findAllByFilters(
+                        userId,
+                        categoryId,
+                        normalizedCurrency,
+                        dateFrom,
+                        dateTo
+                )
                 .stream()
                 .map(TransactionMapper::toResponse)
                 .toList();
