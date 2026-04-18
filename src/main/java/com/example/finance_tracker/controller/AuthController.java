@@ -2,7 +2,10 @@ package com.example.finance_tracker.controller;
 
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
+import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.service.AuthService;
+import com.example.finance_tracker.service.CurrentUserService;
+import com.example.finance_tracker.service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +15,15 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
+    private final CurrentUserService currentUserService;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService,
+                          UserService userService,
+                          CurrentUserService currentUserService) {
         this.authService = authService;
+        this.userService = userService;
+        this.currentUserService = currentUserService;
     }
 
     @PostMapping("/login")
@@ -30,5 +39,11 @@ public class AuthController {
     @PostMapping("/logout")
     public void logout(HttpSession session) {
         session.invalidate();
+    }
+
+    @GetMapping("/me")
+    public UserResponse me(HttpSession session) {
+        Long userId = currentUserService.getCurrentUserId(session);
+        return userService.getUserById(userId);
     }
 }
