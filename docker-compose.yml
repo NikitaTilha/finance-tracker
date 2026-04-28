@@ -29,5 +29,14 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ../finance-tracker-frontend
+    container_name: finance-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
 volumes:
   finance_pg_data:
