@@ -128,8 +128,17 @@ class TransactionServiceTest {
         user.setUsername("nikita");
         user.setPasswordHash("hash");
 
+        Transaction transaction = new Transaction();
+        transaction.setId(1L);
+        transaction.setUser(user);
+        transaction.setAmountCents(125000L);
+        transaction.setCurrency("RUB");
+        transaction.setOccurredAt(OffsetDateTime.now());
+        transaction.setCreatedAt(OffsetDateTime.now());
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(transactionRepository.sumAmountCentsByUserIdAndCurrency(userId, "RUB")).thenReturn(125000L);
+        when(transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId))
+                .thenReturn(List.of(transaction));
 
         BalanceResponse response = transactionService.getBalance(userId, "rub");
 

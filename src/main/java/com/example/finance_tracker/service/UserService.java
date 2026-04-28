@@ -3,14 +3,14 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.user.CreateUserRequest;
 import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.mapper.UserMapper;
+import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.UnauthorizedException;
 import com.example.finance_tracker.repository.UserRepository;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 
 @Service
@@ -18,34 +18,32 @@ import java.util.NoSuchElementException;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        String normalizedUsername = normalizeUsername(request.getUsername());
-        String passwordHash = passwordEncoder.encode(request.getPassword());
-
-        userRepository.findByUsernameIgnoreCase(normalizedUsername)
-                .ifPresent(user -> {
-                    throw new IllegalStateException("Пользователь с таким username уже существует");
-                });
+        if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
+            throw new ConflictException("Пользователь с таким username уже существует");
+        }
 
         User user = new User();
-        user.setUsername(normalizedUsername);
-        user.setPasswordHash(passwordHash);
+        user.setUsername(request.getUsername());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
         User savedUser = userRepository.save(user);
-        return UserMapper.toResponse(savedUser);
+        return toResponse(savedUser);
     }
 
     public List<UserResponse> getAllUsers() {
         return userRepository.findAllByOrderByIdAsc()
                 .stream()
-                .map(UserMapper::toResponse)
+                .map(this::toResponse)
                 .toList();
     }
 
@@ -53,10 +51,26 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
 
-        return UserMapper.toResponse(user);
+        return toResponse(user);
     }
 
-    private String normalizeUsername(String username) {
-        return username.trim().toLowerCase(Locale.ROOT);
+    @Transactional
+    public void deleteCurrentUser(Long currentUserId, String rawPassword) {
+        User user = userRepository.findById(currentUserId)
+                .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
+
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            throw new UnauthorizedException("Неверный пароль");
+        }
+
+        userRepository.delete(user);
+    }
+
+    private UserResponse toResponse(User user) {
+        return new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getCreatedAt()
+        );
     }
 }

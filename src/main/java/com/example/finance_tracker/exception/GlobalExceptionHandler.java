@@ -1,131 +1,123 @@
 package com.example.finance_tracker.exception;
 
-import com.example.finance_tracker.dto.error.ApiErrorResponse;
+import com.example.finance_tracker.dto.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ApiErrorResponse> handleNotFound(
-            NoSuchElementException ex,
+    @ExceptionHandler(UnauthorizedException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleUnauthorizedException(
+            UnauthorizedException exception,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.NOT_FOUND,
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
-        );
-    }
-
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiErrorResponse> handleConflict(
-            IllegalStateException ex,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.CONFLICT,
-                ex.getMessage(),
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                exception.getMessage(),
                 request.getRequestURI(),
                 null
         );
     }
 
     @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ApiErrorResponse> handleInvalidCredentials(
-            InvalidCredentialsException ex,
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleInvalidCredentialsException(
+            InvalidCredentialsException exception,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.UNAUTHORIZED,
-                ex.getMessage(),
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                exception.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflictException(
+            ConflictException exception,
+            HttpServletRequest request
+    ) {
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Conflict",
+                exception.getMessage(),
+                request.getRequestURI(),
+                null
+        );
+    }
+
+    @ExceptionHandler(NoSuchElementException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoSuchElementException(
+            NoSuchElementException exception,
+            HttpServletRequest request
+    ) {
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Not Found",
+                exception.getMessage(),
                 request.getRequestURI(),
                 null
         );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiErrorResponse> handleValidation(
-            MethodArgumentNotValidException ex,
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleMethodArgumentNotValidException(
+            MethodArgumentNotValidException exception,
             HttpServletRequest request
     ) {
-        Map<String, String> validationErrors = new LinkedHashMap<>();
+        Map<String, String> validationErrors = exception.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .collect(Collectors.toMap(
+                        fieldError -> fieldError.getField(),
+                        fieldError -> fieldError.getDefaultMessage() == null
+                                ? "Некорректное значение"
+                                : fieldError.getDefaultMessage(),
+                        (first, second) -> first
+                ));
 
-        for (FieldError fieldError : ex.getBindingResult().getFieldErrors()) {
-            validationErrors.put(fieldError.getField(), fieldError.getDefaultMessage());
-        }
-
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Bad Request",
                 "Ошибка валидации",
                 request.getRequestURI(),
                 validationErrors
         );
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
-    public ResponseEntity<ApiErrorResponse> handleConstraintViolation(
-            ConstraintViolationException ex,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.BAD_REQUEST,
-                ex.getMessage(),
-                request.getRequestURI(),
-                null
-        );
-    }
-
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiErrorResponse> handleOther(
-            Exception ex,
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleException(
+            Exception exception,
             HttpServletRequest request
     ) {
-        return buildResponse(
-                HttpStatus.INTERNAL_SERVER_ERROR,
+        return new ErrorResponse(
+                OffsetDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal Server Error",
                 "Внутренняя ошибка сервера",
-                request.getRequestURI(),
-                null
-        );
-    }
-
-    private ResponseEntity<ApiErrorResponse> buildResponse(
-            HttpStatus status,
-            String message,
-            String path,
-            Map<String, String> validationErrors
-    ) {
-        ApiErrorResponse response = new ApiErrorResponse();
-        response.setTimestamp(OffsetDateTime.now());
-        response.setStatus(status.value());
-        response.setError(status.getReasonPhrase());
-        response.setMessage(message);
-        response.setPath(path);
-        response.setValidationErrors(validationErrors);
-
-        return ResponseEntity.status(status).body(response);
-    }
-    @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<ApiErrorResponse> handleUnauthorized(
-            UnauthorizedException ex,
-            HttpServletRequest request
-    ) {
-        return buildResponse(
-                HttpStatus.UNAUTHORIZED,
-                ex.getMessage(),
                 request.getRequestURI(),
                 null
         );

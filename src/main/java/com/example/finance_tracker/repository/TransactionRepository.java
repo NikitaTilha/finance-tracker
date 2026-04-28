@@ -33,7 +33,13 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     );
 
     @Query("""
-            select coalesce(sum(t.amountCents), 0)
+            select coalesce(sum(
+                case
+                    when t.category.type = 'INCOME' then t.amountCents
+                    when t.category.type = 'EXPENSE' then -t.amountCents
+                    else 0
+                end
+            ), 0)
             from Transaction t
             where t.user.id = :userId
               and t.currency = :currency

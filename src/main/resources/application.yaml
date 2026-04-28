@@ -3,9 +3,9 @@ spring:
     name: finance-tracker
 
   datasource:
-    url: jdbc:postgresql://127.0.0.1:15432/finance_tracker
-    username: finance_user
-    password: finance_pass
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://127.0.0.1:15432/finance_tracker}
+    username: ${SPRING_DATASOURCE_USERNAME:finance_user}
+    password: ${SPRING_DATASOURCE_PASSWORD:finance_pass}
 
   flyway:
     enabled: true

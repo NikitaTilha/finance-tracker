@@ -4,6 +4,7 @@ import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.User;
+import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -81,8 +82,8 @@ class CategoryServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.existsByUser_IdAndNameAndType(userId, "Еда", "EXPENSE")).thenReturn(true);
 
-        IllegalStateException ex = assertThrows(
-                IllegalStateException.class,
+        ConflictException ex = assertThrows(
+                ConflictException.class,
                 () -> categoryService.createCategory(userId, request)
         );
 

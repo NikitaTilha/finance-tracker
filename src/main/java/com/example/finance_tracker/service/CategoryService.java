@@ -5,6 +5,7 @@ import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.dto.category.UpdateCategoryRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.User;
+import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.mapper.CategoryMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
@@ -41,7 +42,7 @@ public class CategoryService {
         );
 
         if (exists) {
-            throw new IllegalStateException("Категория уже существует");
+            throw new ConflictException("Категория уже существует");
         }
 
         Category category = new Category();
@@ -80,7 +81,7 @@ public class CategoryService {
         );
 
         if (exists) {
-            throw new IllegalStateException("Категория уже существует");
+            throw new ConflictException("Категория уже существует");
         }
 
         category.setName(normalizedName);

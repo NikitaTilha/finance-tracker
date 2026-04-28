@@ -2,6 +2,7 @@ package com.example.finance_tracker.controller;
 
 import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
+import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
 import com.example.finance_tracker.exception.UnauthorizedException;
 import com.example.finance_tracker.service.CategoryService;
@@ -110,7 +111,7 @@ class CategoryControllerTest {
 
         when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(categoryService.createCategory(any(Long.class), any(CreateCategoryRequest.class)))
-                .thenThrow(new IllegalStateException("Категория уже существует"));
+                .thenThrow(new ConflictException("Категория уже существует"));
 
         mockMvc.perform(post("/api/categories")
                         .contentType(MediaType.APPLICATION_JSON)

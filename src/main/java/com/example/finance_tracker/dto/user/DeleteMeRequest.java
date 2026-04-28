@@ -3,30 +3,17 @@ package com.example.finance_tracker.dto.user;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-public class CreateUserRequest {
-
-    @NotBlank(message = "Username не должен быть пустым")
-    @Size(min = 3, max = 100, message = "Username должен быть от 3 до 100 символов")
-    private String username;
+public class DeleteMeRequest {
 
     @NotBlank(message = "Пароль не должен быть пустым")
     @Size(min = 6, max = 100, message = "Пароль должен быть от 6 до 100 символов")
     private String password;
 
-    public CreateUserRequest() {
+    public DeleteMeRequest() {
     }
 
-    public CreateUserRequest(String username, String password) {
-        this.username = username;
+    public DeleteMeRequest(String password) {
         this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
     }
 
     public String getPassword() {
