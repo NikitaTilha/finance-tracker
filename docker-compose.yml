@@ -16,5 +16,18 @@ services:
       timeout: 5s
       retries: 5
 
+  backend:
+    build: .
+    container_name: finance-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/finance_tracker
+      SPRING_DATASOURCE_USERNAME: finance_user
+      SPRING_DATASOURCE_PASSWORD: finance_pass
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
 volumes:
   finance_pg_data:
