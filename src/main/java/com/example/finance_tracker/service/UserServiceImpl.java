@@ -5,6 +5,7 @@ import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.entity.User;
 import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.mapper.UserMapper;
 import com.example.finance_tracker.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -19,13 +20,14 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
-    public UserServiceImpl(
-            UserRepository userRepository,
-            PasswordEncoder passwordEncoder
-    ) {
+    public UserServiceImpl(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           UserMapper userMapper) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -40,14 +42,14 @@ public class UserServiceImpl implements UserService {
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
 
         User savedUser = userRepository.save(user);
-        return toResponse(savedUser);
+        return userMapper.toResponse(savedUser);
     }
 
     @Override
     public List<UserResponse> getAllUsers() {
         return userRepository.findAllByOrderByIdAsc()
                 .stream()
-                .map(this::toResponse)
+                .map(userMapper::toResponse)
                 .toList();
     }
 
@@ -56,7 +58,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
 
-        return toResponse(user);
+        return userMapper.toResponse(user);
     }
 
     @Override
@@ -70,13 +72,5 @@ public class UserServiceImpl implements UserService {
         }
 
         userRepository.delete(user);
-    }
-
-    private UserResponse toResponse(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getUsername(),
-                user.getCreatedAt()
-        );
     }
 }
