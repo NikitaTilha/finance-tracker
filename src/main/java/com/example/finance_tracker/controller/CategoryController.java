@@ -1,11 +1,10 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.config.CurrentUserId;
 import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.dto.category.UpdateCategoryRequest;
 import com.example.finance_tracker.service.CategoryService;
-import com.example.finance_tracker.service.CurrentUserService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,41 +16,42 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
-    private final CurrentUserService currentUserService;
 
-    public CategoryController(CategoryService categoryService,
-                              CurrentUserService currentUserService) {
+    public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
-        this.currentUserService = currentUserService;
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponse createCategory(@Valid @RequestBody CreateCategoryRequest request,
-                                           HttpSession session) {
-        Long userId = currentUserService.getCurrentUserId(session);
+    public CategoryResponse createCategory(
+            @CurrentUserId Long userId,
+            @Valid @RequestBody CreateCategoryRequest request
+    ) {
         return categoryService.createCategory(userId, request);
     }
 
     @GetMapping
-    public List<CategoryResponse> getAllCategories(HttpSession session) {
-        Long userId = currentUserService.getCurrentUserId(session);
+    public List<CategoryResponse> getAllCategories(
+            @CurrentUserId Long userId
+    ) {
         return categoryService.getAllByUserId(userId);
     }
 
     @PutMapping("/{categoryId}")
-    public CategoryResponse updateCategory(@PathVariable Long categoryId,
-                                           @Valid @RequestBody UpdateCategoryRequest request,
-                                           HttpSession session) {
-        Long userId = currentUserService.getCurrentUserId(session);
+    public CategoryResponse updateCategory(
+            @CurrentUserId Long userId,
+            @PathVariable Long categoryId,
+            @Valid @RequestBody UpdateCategoryRequest request
+    ) {
         return categoryService.updateCategory(userId, categoryId, request);
     }
 
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCategory(@PathVariable Long categoryId,
-                               HttpSession session) {
-        Long userId = currentUserService.getCurrentUserId(session);
+    public void deleteCategory(
+            @CurrentUserId Long userId,
+            @PathVariable Long categoryId
+    ) {
         categoryService.deleteCategory(userId, categoryId);
     }
 }

@@ -1,14 +1,13 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.config.CurrentUserIdArgumentResolver;
+import com.example.finance_tracker.config.WebConfig;
 import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
-import com.example.finance_tracker.exception.UnauthorizedException;
 import com.example.finance_tracker.service.CategoryService;
-import com.example.finance_tracker.service.CurrentUserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,7 +26,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(CategoryController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({
+        GlobalExceptionHandler.class,
+        WebConfig.class,
+        CurrentUserIdArgumentResolver.class
+})
 class CategoryControllerTest {
 
     @Autowired
@@ -38,9 +41,6 @@ class CategoryControllerTest {
 
     @MockBean
     private CategoryService categoryService;
-
-    @MockBean
-    private CurrentUserService currentUserService;
 
     @Test
     void getAllCategories_shouldReturn200_whenUserIsAuthenticated() throws Exception {
@@ -56,10 +56,10 @@ class CategoryControllerTest {
         category2.setType("INCOME");
         category2.setCreatedAt(OffsetDateTime.now());
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(categoryService.getAllByUserId(1L)).thenReturn(List.of(category1, category2));
 
-        mockMvc.perform(get("/api/categories"))
+        mockMvc.perform(get("/api/categories")
+                        .sessionAttr("userId", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").value("Еда"))
@@ -71,9 +71,6 @@ class CategoryControllerTest {
 
     @Test
     void getAllCategories_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
-        when(currentUserService.getCurrentUserId(any(HttpSession.class)))
-                .thenThrow(new UnauthorizedException("Пользователь не авторизован"));
-
         mockMvc.perform(get("/api/categories"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Пользователь не авторизован"));
@@ -91,10 +88,10 @@ class CategoryControllerTest {
         response.setType("EXPENSE");
         response.setCreatedAt(OffsetDateTime.now());
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(categoryService.createCategory(any(Long.class), any(CreateCategoryRequest.class))).thenReturn(response);
 
         mockMvc.perform(post("/api/categories")
+                        .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -109,11 +106,11 @@ class CategoryControllerTest {
         request.setName("Еда");
         request.setType("EXPENSE");
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(categoryService.createCategory(any(Long.class), any(CreateCategoryRequest.class)))
                 .thenThrow(new ConflictException("Категория уже существует"));
 
         mockMvc.perform(post("/api/categories")
+                        .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -126,9 +123,8 @@ class CategoryControllerTest {
         request.setName("");
         request.setType("");
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
-
         mockMvc.perform(post("/api/categories")
+                        .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
