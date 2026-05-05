@@ -37,7 +37,7 @@ class TransactionServiceTest {
     private CategoryRepository categoryRepository;
 
     @InjectMocks
-    private TransactionService transactionService;
+    private TransactionServiceImpl transactionService;
 
     @Test
     void createTransaction_shouldReturnResponse_whenDataIsValid() {
