@@ -8,25 +8,17 @@ import com.example.finance_tracker.service.AuthService;
 import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
     private final SessionService sessionService;
-
-    public AuthController(
-            AuthService authService,
-            UserService userService,
-            SessionService sessionService
-    ) {
-        this.authService = authService;
-        this.userService = userService;
-        this.sessionService = sessionService;
-    }
 
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {

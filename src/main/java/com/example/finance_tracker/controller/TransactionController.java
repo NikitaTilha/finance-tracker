@@ -8,6 +8,7 @@ import com.example.finance_tracker.dto.transaction.UpdateTransactionRequest;
 import com.example.finance_tracker.service.BalanceService;
 import com.example.finance_tracker.service.TransactionService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,19 +16,12 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/transactions")
 public class TransactionController {
 
     private final TransactionService transactionService;
     private final BalanceService balanceService;
-
-    public TransactionController(
-            TransactionService transactionService,
-            BalanceService balanceService
-    ) {
-        this.transactionService = transactionService;
-        this.balanceService = balanceService;
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

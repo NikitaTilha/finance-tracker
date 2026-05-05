@@ -7,25 +7,19 @@ import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
     private final SessionService sessionService;
-
-    public UserController(
-            UserService userService,
-            SessionService sessionService
-    ) {
-        this.userService = userService;
-        this.sessionService = sessionService;
-    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
