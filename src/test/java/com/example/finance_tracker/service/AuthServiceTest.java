@@ -25,7 +25,7 @@ class AuthServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private AuthService authService;
+    private AuthServiceImpl authService;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
