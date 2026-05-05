@@ -1,5 +1,6 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.service.BalanceService;
 import com.example.finance_tracker.dto.balance.BalanceResponse;
 import com.example.finance_tracker.dto.transaction.CreateTransactionRequest;
 import com.example.finance_tracker.dto.transaction.TransactionResponse;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
 
 @WebMvcTest(TransactionController.class)
 @Import(GlobalExceptionHandler.class)
@@ -135,7 +137,7 @@ class TransactionControllerTest {
         response.setAmountCents(-50000L);
 
         when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
-        when(transactionService.getBalance(1L, "RUB")).thenReturn(response);
+        when(balanceService.getBalance(1L, "RUB")).thenReturn(response);
 
         mockMvc.perform(get("/api/transactions/balance")
                         .param("currency", "RUB"))
@@ -154,4 +156,7 @@ class TransactionControllerTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Пользователь не авторизован"));
     }
+
+    @MockBean
+    private BalanceService balanceService;
 }

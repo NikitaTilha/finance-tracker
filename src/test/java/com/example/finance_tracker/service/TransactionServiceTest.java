@@ -120,34 +120,6 @@ class TransactionServiceTest {
     }
 
     @Test
-    void getBalance_shouldReturnResponse_whenCurrencyExists() {
-        Long userId = 1L;
-
-        User user = new User();
-        user.setId(userId);
-        user.setUsername("nikita");
-        user.setPasswordHash("hash");
-
-        Transaction transaction = new Transaction();
-        transaction.setId(1L);
-        transaction.setUser(user);
-        transaction.setAmountCents(125000L);
-        transaction.setCurrency("RUB");
-        transaction.setOccurredAt(OffsetDateTime.now());
-        transaction.setCreatedAt(OffsetDateTime.now());
-
-        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-        when(transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId))
-                .thenReturn(List.of(transaction));
-
-        BalanceResponse response = transactionService.getBalance(userId, "rub");
-
-        assertNotNull(response);
-        assertEquals("RUB", response.getCurrency());
-        assertEquals(125000L, response.getAmountCents());
-    }
-
-    @Test
     void getAllByFilters_shouldReturnTransactions_whenFiltersAreEmpty() {
         Long userId = 1L;
         OffsetDateTime now = OffsetDateTime.now();
@@ -191,4 +163,9 @@ class TransactionServiceTest {
         assertEquals(-25000L, responses.get(0).getAmountCents());
         assertEquals("RUB", responses.get(0).getCurrency());
     }
+    @Mock
+    private BalanceService balanceService;
+
+    @Mock
+    private CurrencyConversionService currencyConversionService;
 }
