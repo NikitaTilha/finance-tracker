@@ -9,6 +9,7 @@ import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.mapper.CategoryMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,20 +18,13 @@ import java.util.Locale;
 import java.util.NoSuchElementException;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
     private final CategoryMapper categoryMapper;
-
-    public CategoryServiceImpl(CategoryRepository categoryRepository,
-                               UserRepository userRepository,
-                               CategoryMapper categoryMapper) {
-        this.categoryRepository = categoryRepository;
-        this.userRepository = userRepository;
-        this.categoryMapper = categoryMapper;
-    }
 
     @Override
     @Transactional

@@ -6,6 +6,7 @@ import com.example.finance_tracker.entity.Transaction;
 import com.example.finance_tracker.exception.ConflictException;
 import com.example.finance_tracker.repository.TransactionRepository;
 import com.example.finance_tracker.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,22 +15,13 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BalanceServiceImpl implements BalanceService {
 
     private final TransactionRepository transactionRepository;
     private final UserRepository userRepository;
     private final CurrencyConversionService currencyConversionService;
-
-    public BalanceServiceImpl(
-            TransactionRepository transactionRepository,
-            UserRepository userRepository,
-            CurrencyConversionService currencyConversionService
-    ) {
-        this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
-        this.currencyConversionService = currencyConversionService;
-    }
 
     @Override
     public BalanceResponse getBalance(Long userId, String currency) {

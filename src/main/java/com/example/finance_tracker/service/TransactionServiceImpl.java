@@ -10,6 +10,7 @@ import com.example.finance_tracker.mapper.TransactionMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.TransactionRepository;
 import com.example.finance_tracker.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class TransactionServiceImpl implements TransactionService {
 
@@ -27,22 +29,6 @@ public class TransactionServiceImpl implements TransactionService {
     private final BalanceService balanceService;
     private final CurrencyConversionService currencyConversionService;
     private final TransactionMapper transactionMapper;
-
-    public TransactionServiceImpl(
-            TransactionRepository transactionRepository,
-            UserRepository userRepository,
-            CategoryRepository categoryRepository,
-            BalanceService balanceService,
-            CurrencyConversionService currencyConversionService,
-            TransactionMapper transactionMapper
-    ) {
-        this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
-        this.categoryRepository = categoryRepository;
-        this.balanceService = balanceService;
-        this.currencyConversionService = currencyConversionService;
-        this.transactionMapper = transactionMapper;
-    }
 
     @Override
     @Transactional

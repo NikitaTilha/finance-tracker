@@ -5,6 +5,7 @@ import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.entity.User;
 import com.example.finance_tracker.exception.InvalidCredentialsException;
 import com.example.finance_tracker.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,15 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Locale;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
-    public AuthServiceImpl(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public LoginResponse login(LoginRequest request) {
