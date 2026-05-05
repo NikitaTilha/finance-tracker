@@ -3,9 +3,15 @@ package com.example.finance_tracker.dto.transaction;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.OffsetDateTime;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class UpdateTransactionRequest {
 
     private Long categoryId;
@@ -22,47 +28,4 @@ public class UpdateTransactionRequest {
 
     @Size(max = 500)
     private String note;
-
-    public UpdateTransactionRequest() {
-    }
-
-    public Long getCategoryId() {
-        return categoryId;
-    }
-
-    public void setCategoryId(Long categoryId) {
-        this.categoryId = categoryId;
-    }
-
-    public Long getAmountCents() {
-        return amountCents;
-    }
-
-    public void setAmountCents(Long amountCents) {
-        this.amountCents = amountCents;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public OffsetDateTime getOccurredAt() {
-        return occurredAt;
-    }
-
-    public void setOccurredAt(OffsetDateTime occurredAt) {
-        this.occurredAt = occurredAt;
-    }
-
-    public String getNote() {
-        return note;
-    }
-
-    public void setNote(String note) {
-        this.note = note;
-    }
 }

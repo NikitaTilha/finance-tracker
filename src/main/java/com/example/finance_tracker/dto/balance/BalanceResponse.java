@@ -1,31 +1,16 @@
 package com.example.finance_tracker.dto.balance;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class BalanceResponse {
 
     private String currency;
     private Long amountCents;
-
-    public BalanceResponse() {
-    }
-
-    public BalanceResponse(String currency, Long amountCents) {
-        this.currency = currency;
-        this.amountCents = amountCents;
-    }
-
-    public String getCurrency() {
-        return currency;
-    }
-
-    public void setCurrency(String currency) {
-        this.currency = currency;
-    }
-
-    public Long getAmountCents() {
-        return amountCents;
-    }
-
-    public void setAmountCents(Long amountCents) {
-        this.amountCents = amountCents;
-    }
 }

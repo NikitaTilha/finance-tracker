@@ -2,7 +2,13 @@ package com.example.finance_tracker.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class LoginRequest {
 
     @NotBlank(message = "Username не должен быть пустым")
@@ -12,23 +18,4 @@ public class LoginRequest {
     @NotBlank(message = "Пароль не должен быть пустым")
     @Size(min = 6, max = 100, message = "Пароль должен быть от 6 до 100 символов")
     private String password;
-
-    public LoginRequest() {
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }
