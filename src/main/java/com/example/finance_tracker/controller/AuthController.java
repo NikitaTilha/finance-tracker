@@ -1,12 +1,12 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.config.CurrentUserId;
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.service.AuthService;
-import com.example.finance_tracker.service.CurrentUserService;
+import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,34 +16,34 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserService userService;
-    private final CurrentUserService currentUserService;
+    private final SessionService sessionService;
 
-    public AuthController(AuthService authService,
-                          UserService userService,
-                          CurrentUserService currentUserService) {
+    public AuthController(
+            AuthService authService,
+            UserService userService,
+            SessionService sessionService
+    ) {
         this.authService = authService;
         this.userService = userService;
-        this.currentUserService = currentUserService;
+        this.sessionService = sessionService;
     }
 
     @PostMapping("/login")
-    public LoginResponse login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         LoginResponse response = authService.login(request);
 
-        session.setAttribute("userId", response.getId());
-        session.setAttribute("username", response.getUsername());
+        sessionService.saveCurrentUser(response.getId(), response.getUsername());
 
         return response;
     }
 
     @PostMapping("/logout")
-    public void logout(HttpSession session) {
-        session.invalidate();
+    public void logout() {
+        sessionService.invalidateCurrentSession();
     }
 
     @GetMapping("/me")
-    public UserResponse me(HttpSession session) {
-        Long userId = currentUserService.getCurrentUserId(session);
+    public UserResponse me(@CurrentUserId Long userId) {
         return userService.getUserById(userId);
     }
 }

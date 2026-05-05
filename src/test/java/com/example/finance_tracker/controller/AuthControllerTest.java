@@ -1,13 +1,14 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.config.CurrentUserIdArgumentResolver;
+import com.example.finance_tracker.config.WebConfig;
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
 import com.example.finance_tracker.exception.InvalidCredentialsException;
-import com.example.finance_tracker.exception.UnauthorizedException;
 import com.example.finance_tracker.service.AuthService;
-import com.example.finance_tracker.service.CurrentUserService;
+import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -21,14 +22,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.OffsetDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({
+        GlobalExceptionHandler.class,
+        WebConfig.class,
+        CurrentUserIdArgumentResolver.class
+})
 class AuthControllerTest {
 
     @Autowired
@@ -44,7 +48,7 @@ class AuthControllerTest {
     private UserService userService;
 
     @MockBean
-    private CurrentUserService currentUserService;
+    private SessionService sessionService;
 
     @Test
     void login_shouldReturn200_whenCredentialsAreValid() throws Exception {
@@ -94,10 +98,10 @@ class AuthControllerTest {
                 OffsetDateTime.now()
         );
 
-        when(currentUserService.getCurrentUserId(any())).thenReturn(1L);
         when(userService.getUserById(1L)).thenReturn(response);
 
-        mockMvc.perform(get("/api/auth/me"))
+        mockMvc.perform(get("/api/auth/me")
+                        .sessionAttr("userId", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.username").value("nikita"));
@@ -105,9 +109,6 @@ class AuthControllerTest {
 
     @Test
     void me_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
-        when(currentUserService.getCurrentUserId(any()))
-                .thenThrow(new UnauthorizedException("Пользователь не авторизован"));
-
         mockMvc.perform(get("/api/auth/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Пользователь не авторизован"));
