@@ -1,11 +1,11 @@
 package com.example.finance_tracker.controller;
 
+import com.example.finance_tracker.config.CurrentUserId;
 import com.example.finance_tracker.dto.user.CreateUserRequest;
 import com.example.finance_tracker.dto.user.DeleteMeRequest;
 import com.example.finance_tracker.dto.user.UserResponse;
-import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +17,14 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final SessionService sessionService;
 
-    public UserController(UserService userService) {
+    public UserController(
+            UserService userService,
+            SessionService sessionService
+    ) {
         this.userService = userService;
+        this.sessionService = sessionService;
     }
 
     @PostMapping
@@ -40,15 +45,11 @@ public class UserController {
 
     @PostMapping("/me/delete")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteMe(@Valid @RequestBody DeleteMeRequest request,
-                         HttpSession session) {
-        Long currentUserId = (Long) session.getAttribute("userId");
-
-        if (currentUserId == null) {
-            throw new UnauthorizedException("Требуется авторизация");
-        }
-
+    public void deleteMe(
+            @CurrentUserId Long currentUserId,
+            @Valid @RequestBody DeleteMeRequest request
+    ) {
         userService.deleteCurrentUser(currentUserId, request.getPassword());
-        session.invalidate();
+        sessionService.invalidateCurrentSession();
     }
 }

@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.finance_tracker.service.SessionService;
+
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,6 +38,9 @@ class UserControllerTest {
 
     @MockBean
     private UserService userService;
+
+    @MockBean
+    private SessionService sessionService;
 
     @Test
     void getAllUsers_shouldReturn200() throws Exception {
