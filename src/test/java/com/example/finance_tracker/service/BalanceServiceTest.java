@@ -31,7 +31,7 @@ class BalanceServiceTest {
     private CurrencyConversionService currencyConversionService;
 
     @InjectMocks
-    private BalanceService balanceService;
+    private BalanceServiceImpl balanceService;
 
     @Test
     void getBalance_shouldReturnResponse_whenCurrencyExists() {
