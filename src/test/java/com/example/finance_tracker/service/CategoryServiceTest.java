@@ -5,6 +5,7 @@ import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.User;
 import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.mapper.CategoryMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,6 +30,9 @@ class CategoryServiceTest {
 
     @Mock
     private UserRepository userRepository;
+
+    @Mock
+    private CategoryMapper categoryMapper;
 
     @InjectMocks
     private CategoryServiceImpl categoryService;
@@ -53,9 +58,16 @@ class CategoryServiceTest {
         savedCategory.setType("EXPENSE");
         savedCategory.setCreatedAt(OffsetDateTime.now());
 
+        CategoryResponse mappedResponse = new CategoryResponse();
+        mappedResponse.setId(10L);
+        mappedResponse.setName("Еда");
+        mappedResponse.setType("EXPENSE");
+        mappedResponse.setCreatedAt(savedCategory.getCreatedAt());
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.existsByUser_IdAndNameAndType(userId, "Еда", "EXPENSE")).thenReturn(false);
-        when(categoryRepository.save(org.mockito.ArgumentMatchers.any(Category.class))).thenReturn(savedCategory);
+        when(categoryRepository.save(any(Category.class))).thenReturn(savedCategory);
+        when(categoryMapper.toResponse(savedCategory)).thenReturn(mappedResponse);
 
         CategoryResponse response = categoryService.createCategory(userId, request);
 
@@ -113,8 +125,22 @@ class CategoryServiceTest {
         category2.setType("INCOME");
         category2.setCreatedAt(OffsetDateTime.now());
 
+        CategoryResponse response1 = new CategoryResponse();
+        response1.setId(1L);
+        response1.setName("Еда");
+        response1.setType("EXPENSE");
+        response1.setCreatedAt(category1.getCreatedAt());
+
+        CategoryResponse response2 = new CategoryResponse();
+        response2.setId(2L);
+        response2.setName("Зарплата");
+        response2.setType("INCOME");
+        response2.setCreatedAt(category2.getCreatedAt());
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.findAllByUser_IdOrderByIdAsc(userId)).thenReturn(List.of(category1, category2));
+        when(categoryMapper.toResponse(category1)).thenReturn(response1);
+        when(categoryMapper.toResponse(category2)).thenReturn(response2);
 
         List<CategoryResponse> responses = categoryService.getAllByUserId(userId);
 

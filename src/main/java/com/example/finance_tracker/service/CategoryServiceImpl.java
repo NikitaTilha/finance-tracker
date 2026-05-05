@@ -22,10 +22,14 @@ public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
+    private final CategoryMapper categoryMapper;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, UserRepository userRepository) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository,
+                               UserRepository userRepository,
+                               CategoryMapper categoryMapper) {
         this.categoryRepository = categoryRepository;
         this.userRepository = userRepository;
+        this.categoryMapper = categoryMapper;
     }
 
     @Override
@@ -52,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setType(normalizedType);
 
         Category savedCategory = categoryRepository.save(category);
-        return CategoryMapper.toResponse(savedCategory);
+        return categoryMapper.toResponse(savedCategory);
     }
 
     @Override
@@ -61,7 +65,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         return categoryRepository.findAllByUser_IdOrderByIdAsc(userId)
                 .stream()
-                .map(CategoryMapper::toResponse)
+                .map(categoryMapper::toResponse)
                 .toList();
     }
 
@@ -90,7 +94,7 @@ public class CategoryServiceImpl implements CategoryService {
         category.setName(normalizedName);
         category.setType(normalizedType);
 
-        return CategoryMapper.toResponse(category);
+        return categoryMapper.toResponse(category);
     }
 
     @Override
