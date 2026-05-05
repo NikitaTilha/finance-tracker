@@ -30,7 +30,7 @@ class CategoryServiceTest {
     private UserRepository userRepository;
 
     @InjectMocks
-    private CategoryService categoryService;
+    private CategoryServiceImpl categoryService;
 
     @Test
     void createCategory_shouldReturnResponse_whenDataIsValid() {
