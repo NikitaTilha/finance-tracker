@@ -3,6 +3,7 @@ package com.example.finance_tracker.exception;
 import com.example.finance_tracker.dto.error.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -16,52 +17,23 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(UnauthorizedException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleUnauthorizedException(
-            UnauthorizedException exception,
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(
+            ApiException exception,
             HttpServletRequest request
     ) {
-        return new ErrorResponse(
-                OffsetDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                exception.getMessage(),
-                request.getRequestURI(),
-                null
-        );
-    }
+        HttpStatus status = exception.getStatus();
 
-    @ExceptionHandler(InvalidCredentialsException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public ErrorResponse handleInvalidCredentialsException(
-            InvalidCredentialsException exception,
-            HttpServletRequest request
-    ) {
-        return new ErrorResponse(
+        ErrorResponse response = new ErrorResponse(
                 OffsetDateTime.now(),
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
+                status.value(),
+                status.getReasonPhrase(),
                 exception.getMessage(),
                 request.getRequestURI(),
                 null
         );
-    }
 
-    @ExceptionHandler(ConflictException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleConflictException(
-            ConflictException exception,
-            HttpServletRequest request
-    ) {
-        return new ErrorResponse(
-                OffsetDateTime.now(),
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                exception.getMessage(),
-                request.getRequestURI(),
-                null
-        );
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(NoSuchElementException.class)

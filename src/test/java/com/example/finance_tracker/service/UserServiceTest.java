@@ -3,8 +3,7 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.user.CreateUserRequest;
 import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.ConflictException;
-import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.mapper.UserMapper;
 import com.example.finance_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -12,6 +11,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.OffsetDateTime;
@@ -81,11 +81,12 @@ class UserServiceTest {
 
         when(userRepository.existsByUsernameIgnoreCase("nikita")).thenReturn(true);
 
-        ConflictException ex = assertThrows(
-                ConflictException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> userService.createUser(request)
         );
 
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
         assertEquals("Пользователь с таким username уже существует", ex.getMessage());
 
         verify(userRepository, never()).save(any(User.class));
@@ -185,11 +186,12 @@ class UserServiceTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("wrongpass", "encoded-password")).thenReturn(false);
 
-        UnauthorizedException ex = assertThrows(
-                UnauthorizedException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> userService.deleteCurrentUser(1L, "wrongpass")
         );
 
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatus());
         assertEquals("Неверный пароль", ex.getMessage());
 
         verify(userRepository, never()).delete(any(User.class));

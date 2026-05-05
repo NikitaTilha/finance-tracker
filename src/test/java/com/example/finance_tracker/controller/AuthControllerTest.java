@@ -5,8 +5,8 @@ import com.example.finance_tracker.config.WebConfig;
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.dto.user.UserResponse;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
-import com.example.finance_tracker.exception.InvalidCredentialsException;
 import com.example.finance_tracker.service.AuthService;
 import com.example.finance_tracker.service.SessionService;
 import com.example.finance_tracker.service.UserService;
@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -81,7 +82,10 @@ class AuthControllerTest {
         request.setPassword("wrongpass");
 
         when(authService.login(any(LoginRequest.class)))
-                .thenThrow(new InvalidCredentialsException("Неверный username или пароль"));
+                .thenThrow(new ApiException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Неверный username или пароль"
+                ));
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)

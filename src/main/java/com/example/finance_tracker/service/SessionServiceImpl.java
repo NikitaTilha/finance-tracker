@@ -1,7 +1,8 @@
 package com.example.finance_tracker.service;
 
-import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.exception.ApiException;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -37,7 +38,10 @@ public class SessionServiceImpl implements SessionService {
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
         if (attributes == null) {
-            throw new UnauthorizedException("Пользователь не авторизован");
+            throw new ApiException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Пользователь не авторизован"
+            );
         }
 
         return attributes;

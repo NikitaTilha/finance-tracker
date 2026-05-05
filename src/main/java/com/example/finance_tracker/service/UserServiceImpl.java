@@ -3,11 +3,11 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.user.CreateUserRequest;
 import com.example.finance_tracker.dto.user.UserResponse;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.ConflictException;
-import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.mapper.UserMapper;
 import com.example.finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +28,10 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
         if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
-            throw new ConflictException("Пользователь с таким username уже существует");
+            throw new ApiException(
+                    HttpStatus.CONFLICT,
+                    "Пользователь с таким username уже существует"
+            );
         }
 
         User user = new User();
@@ -62,7 +65,10 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new NoSuchElementException("Пользователь не найден"));
 
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
-            throw new UnauthorizedException("Неверный пароль");
+            throw new ApiException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Неверный пароль"
+            );
         }
 
         userRepository.delete(user);

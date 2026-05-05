@@ -4,7 +4,7 @@ import com.example.finance_tracker.config.CurrentUserIdArgumentResolver;
 import com.example.finance_tracker.config.WebConfig;
 import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
-import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
 import com.example.finance_tracker.service.CategoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -107,7 +108,10 @@ class CategoryControllerTest {
         request.setType("EXPENSE");
 
         when(categoryService.createCategory(any(Long.class), any(CreateCategoryRequest.class)))
-                .thenThrow(new ConflictException("Категория уже существует"));
+                .thenThrow(new ApiException(
+                        HttpStatus.CONFLICT,
+                        "Категория уже существует"
+                ));
 
         mockMvc.perform(post("/api/categories")
                         .sessionAttr("userId", 1L)

@@ -3,13 +3,14 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.InvalidCredentialsException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.OffsetDateTime;
@@ -68,11 +69,12 @@ class AuthServiceTest {
         when(userRepository.findByUsernameIgnoreCase("nikita"))
                 .thenReturn(Optional.of(user));
 
-        InvalidCredentialsException ex = assertThrows(
-                InvalidCredentialsException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> authService.login(request)
         );
 
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatus());
         assertEquals("Неверный username или пароль", ex.getMessage());
     }
 
@@ -85,11 +87,12 @@ class AuthServiceTest {
         when(userRepository.findByUsernameIgnoreCase("nikita"))
                 .thenReturn(Optional.empty());
 
-        InvalidCredentialsException ex = assertThrows(
-                InvalidCredentialsException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> authService.login(request)
         );
 
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatus());
         assertEquals("Неверный username или пароль", ex.getMessage());
     }
 }

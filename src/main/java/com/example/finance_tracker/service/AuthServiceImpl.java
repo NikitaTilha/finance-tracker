@@ -3,9 +3,10 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.auth.LoginRequest;
 import com.example.finance_tracker.dto.auth.LoginResponse;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.InvalidCredentialsException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,12 +26,18 @@ public class AuthServiceImpl implements AuthService {
         String normalizedUsername = normalizeUsername(request.getUsername());
 
         User user = userRepository.findByUsernameIgnoreCase(normalizedUsername)
-                .orElseThrow(() -> new InvalidCredentialsException("Неверный username или пароль"));
+                .orElseThrow(() -> new ApiException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Неверный username или пароль"
+                ));
 
         boolean matches = passwordEncoder.matches(request.getPassword(), user.getPasswordHash());
 
         if (!matches) {
-            throw new InvalidCredentialsException("Неверный username или пароль");
+            throw new ApiException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Неверный username или пароль"
+            );
         }
 
         return new LoginResponse(

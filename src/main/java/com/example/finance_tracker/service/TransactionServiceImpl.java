@@ -6,11 +6,13 @@ import com.example.finance_tracker.dto.transaction.UpdateTransactionRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.Transaction;
 import com.example.finance_tracker.entity.User;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.mapper.TransactionMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.TransactionRepository;
 import com.example.finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
         }
 
         if (dateFrom != null && dateTo != null && dateFrom.isAfter(dateTo)) {
-            throw new IllegalStateException("dateFrom не может быть позже dateTo");
+            throw new ApiException(HttpStatus.BAD_REQUEST, "dateFrom не может быть позже dateTo");
         }
 
         if (categoryId == null && currency == null && dateFrom == null && dateTo == null) {

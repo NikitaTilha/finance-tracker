@@ -5,11 +5,12 @@ import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.dto.category.UpdateCategoryRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.mapper.CategoryMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class CategoryServiceImpl implements CategoryService {
         );
 
         if (exists) {
-            throw new ConflictException("Категория уже существует");
+            throw new ApiException(HttpStatus.CONFLICT, "Категория уже существует");
         }
 
         Category category = new Category();
@@ -82,7 +83,7 @@ public class CategoryServiceImpl implements CategoryService {
         );
 
         if (exists) {
-            throw new ConflictException("Категория уже существует");
+            throw new ApiException(HttpStatus.CONFLICT, "Категория уже существует");
         }
 
         category.setName(normalizedName);

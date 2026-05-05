@@ -4,7 +4,7 @@ import com.example.finance_tracker.dto.category.CategoryResponse;
 import com.example.finance_tracker.dto.category.CreateCategoryRequest;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.User;
-import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.mapper.CategoryMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.UserRepository;
@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -94,11 +95,12 @@ class CategoryServiceTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.existsByUser_IdAndNameAndType(userId, "Еда", "EXPENSE")).thenReturn(true);
 
-        ConflictException ex = assertThrows(
-                ConflictException.class,
+        ApiException ex = assertThrows(
+                ApiException.class,
                 () -> categoryService.createCategory(userId, request)
         );
 
+        assertEquals(HttpStatus.CONFLICT, ex.getStatus());
         assertEquals("Категория уже существует", ex.getMessage());
     }
 

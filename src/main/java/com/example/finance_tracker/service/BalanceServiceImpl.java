@@ -3,10 +3,11 @@ package com.example.finance_tracker.service;
 import com.example.finance_tracker.dto.balance.BalanceResponse;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.Transaction;
-import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.ApiException;
 import com.example.finance_tracker.repository.TransactionRepository;
 import com.example.finance_tracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,7 +53,7 @@ public class BalanceServiceImpl implements BalanceService {
         BigDecimal newBalance = currentBalance.add(newSignedAmount);
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new ConflictException("Недостаточно средств");
+            throw new ApiException(HttpStatus.CONFLICT, "Недостаточно средств");
         }
     }
 
@@ -75,7 +76,7 @@ public class BalanceServiceImpl implements BalanceService {
                 .add(newSignedAmount);
 
         if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new ConflictException("Недостаточно средств");
+            throw new ApiException(HttpStatus.CONFLICT, "Недостаточно средств");
         }
     }
 

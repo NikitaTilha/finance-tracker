@@ -1,9 +1,10 @@
 package com.example.finance_tracker.config;
 
-import com.example.finance_tracker.exception.UnauthorizedException;
+import com.example.finance_tracker.exception.ApiException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.core.MethodParameter;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
@@ -31,19 +32,19 @@ public class CurrentUserIdArgumentResolver implements HandlerMethodArgumentResol
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
 
         if (request == null) {
-            throw new UnauthorizedException("Пользователь не авторизован");
+            throwUnauthorized();
         }
 
         HttpSession session = request.getSession(false);
 
         if (session == null) {
-            throw new UnauthorizedException("Пользователь не авторизован");
+            throwUnauthorized();
         }
 
         Object userId = session.getAttribute(USER_ID_SESSION_ATTRIBUTE);
 
         if (userId == null) {
-            throw new UnauthorizedException("Пользователь не авторизован");
+            throwUnauthorized();
         }
 
         if (userId instanceof Long longUserId) {
@@ -54,6 +55,15 @@ public class CurrentUserIdArgumentResolver implements HandlerMethodArgumentResol
             return numberUserId.longValue();
         }
 
-        throw new UnauthorizedException("Пользователь не авторизован");
+        throwUnauthorized();
+
+        return null;
+    }
+
+    private void throwUnauthorized() {
+        throw new ApiException(
+                HttpStatus.UNAUTHORIZED,
+                "Пользователь не авторизован"
+        );
     }
 }

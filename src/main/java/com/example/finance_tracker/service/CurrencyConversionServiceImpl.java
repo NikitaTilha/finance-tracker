@@ -1,6 +1,7 @@
 package com.example.finance_tracker.service;
 
-import com.example.finance_tracker.exception.ConflictException;
+import com.example.finance_tracker.exception.ApiException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -17,7 +18,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
     @Override
     public String normalizeCurrency(String currency) {
         if (currency == null || currency.trim().isEmpty()) {
-            throw new ConflictException("Валюта не указана");
+            throw new ApiException(HttpStatus.CONFLICT, "Валюта не указана");
         }
 
         String normalizedCurrency = currency.trim().toUpperCase(Locale.ROOT);
@@ -25,7 +26,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
         if (!normalizedCurrency.equals("BYN")
                 && !normalizedCurrency.equals("USD")
                 && !normalizedCurrency.equals("RUB")) {
-            throw new ConflictException("Неподдерживаемая валюта");
+            throw new ApiException(HttpStatus.CONFLICT, "Неподдерживаемая валюта");
         }
 
         return normalizedCurrency;
@@ -58,7 +59,7 @@ public class CurrencyConversionServiceImpl implements CurrencyConversionService 
             case "BYN" -> BYN_RATE;
             case "USD" -> USD_TO_BYN;
             case "RUB" -> RUB_TO_BYN;
-            default -> throw new ConflictException("Неподдерживаемая валюта");
+            default -> throw new ApiException(HttpStatus.CONFLICT, "Неподдерживаемая валюта");
         };
     }
 }
