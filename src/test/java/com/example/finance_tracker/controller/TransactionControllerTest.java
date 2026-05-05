@@ -1,15 +1,14 @@
 package com.example.finance_tracker.controller;
 
-import com.example.finance_tracker.service.BalanceService;
+import com.example.finance_tracker.config.CurrentUserIdArgumentResolver;
+import com.example.finance_tracker.config.WebConfig;
 import com.example.finance_tracker.dto.balance.BalanceResponse;
 import com.example.finance_tracker.dto.transaction.CreateTransactionRequest;
 import com.example.finance_tracker.dto.transaction.TransactionResponse;
 import com.example.finance_tracker.exception.GlobalExceptionHandler;
-import com.example.finance_tracker.exception.UnauthorizedException;
-import com.example.finance_tracker.service.CurrentUserService;
+import com.example.finance_tracker.service.BalanceService;
 import com.example.finance_tracker.service.TransactionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.http.HttpSession;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -28,9 +27,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
 @WebMvcTest(TransactionController.class)
-@Import(GlobalExceptionHandler.class)
+@Import({
+        GlobalExceptionHandler.class,
+        WebConfig.class,
+        CurrentUserIdArgumentResolver.class
+})
 class TransactionControllerTest {
 
     @Autowired
@@ -43,7 +45,7 @@ class TransactionControllerTest {
     private TransactionService transactionService;
 
     @MockBean
-    private CurrentUserService currentUserService;
+    private BalanceService balanceService;
 
     @Test
     void getAllTransactions_shouldReturn200_whenUserIsAuthenticated() throws Exception {
@@ -56,11 +58,11 @@ class TransactionControllerTest {
         transaction.setNote("Продукты");
         transaction.setCreatedAt(OffsetDateTime.now());
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(transactionService.getAllByFilters(1L, null, null, null, null))
                 .thenReturn(List.of(transaction));
 
-        mockMvc.perform(get("/api/transactions"))
+        mockMvc.perform(get("/api/transactions")
+                        .sessionAttr("userId", 1L))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].categoryId").value(1))
@@ -71,9 +73,6 @@ class TransactionControllerTest {
 
     @Test
     void getAllTransactions_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
-        when(currentUserService.getCurrentUserId(any(HttpSession.class)))
-                .thenThrow(new UnauthorizedException("Пользователь не авторизован"));
-
         mockMvc.perform(get("/api/transactions"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Пользователь не авторизован"));
@@ -97,11 +96,11 @@ class TransactionControllerTest {
         response.setNote("Продукты");
         response.setCreatedAt(OffsetDateTime.now());
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(transactionService.createTransaction(eq(1L), any(CreateTransactionRequest.class)))
                 .thenReturn(response);
 
         mockMvc.perform(post("/api/transactions")
+                        .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -121,9 +120,8 @@ class TransactionControllerTest {
         request.setOccurredAt(null);
         request.setNote("Продукты");
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
-
         mockMvc.perform(post("/api/transactions")
+                        .sessionAttr("userId", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -136,10 +134,10 @@ class TransactionControllerTest {
         response.setCurrency("RUB");
         response.setAmountCents(-50000L);
 
-        when(currentUserService.getCurrentUserId(any(HttpSession.class))).thenReturn(1L);
         when(balanceService.getBalance(1L, "RUB")).thenReturn(response);
 
         mockMvc.perform(get("/api/transactions/balance")
+                        .sessionAttr("userId", 1L)
                         .param("currency", "RUB"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.currency").value("RUB"))
@@ -148,15 +146,9 @@ class TransactionControllerTest {
 
     @Test
     void getBalance_shouldReturn401_whenUserIsNotAuthenticated() throws Exception {
-        when(currentUserService.getCurrentUserId(any(HttpSession.class)))
-                .thenThrow(new UnauthorizedException("Пользователь не авторизован"));
-
         mockMvc.perform(get("/api/transactions/balance")
                         .param("currency", "RUB"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Пользователь не авторизован"));
     }
-
-    @MockBean
-    private BalanceService balanceService;
 }
