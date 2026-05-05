@@ -1,11 +1,11 @@
 package com.example.finance_tracker.service;
 
-import com.example.finance_tracker.dto.balance.BalanceResponse;
 import com.example.finance_tracker.dto.transaction.CreateTransactionRequest;
 import com.example.finance_tracker.dto.transaction.TransactionResponse;
 import com.example.finance_tracker.entity.Category;
 import com.example.finance_tracker.entity.Transaction;
 import com.example.finance_tracker.entity.User;
+import com.example.finance_tracker.mapper.TransactionMapper;
 import com.example.finance_tracker.repository.CategoryRepository;
 import com.example.finance_tracker.repository.TransactionRepository;
 import com.example.finance_tracker.repository.UserRepository;
@@ -36,6 +36,15 @@ class TransactionServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private BalanceService balanceService;
+
+    @Mock
+    private CurrencyConversionService currencyConversionService;
+
+    @Mock
+    private TransactionMapper transactionMapper;
+
     @InjectMocks
     private TransactionServiceImpl transactionService;
 
@@ -44,19 +53,20 @@ class TransactionServiceTest {
         Long userId = 1L;
         Long categoryId = 10L;
         OffsetDateTime occurredAt = OffsetDateTime.now();
+        OffsetDateTime createdAt = OffsetDateTime.now();
 
         User user = new User();
         user.setId(userId);
         user.setUsername("nikita");
         user.setPasswordHash("hash");
-        user.setCreatedAt(OffsetDateTime.now());
+        user.setCreatedAt(createdAt);
 
         Category category = new Category();
         category.setId(categoryId);
         category.setUser(user);
         category.setName("Еда");
         category.setType("EXPENSE");
-        category.setCreatedAt(OffsetDateTime.now());
+        category.setCreatedAt(createdAt);
 
         CreateTransactionRequest request = new CreateTransactionRequest();
         request.setCategoryId(categoryId);
@@ -73,11 +83,22 @@ class TransactionServiceTest {
         savedTransaction.setCurrency("RUB");
         savedTransaction.setOccurredAt(occurredAt);
         savedTransaction.setNote("Продукты");
-        savedTransaction.setCreatedAt(OffsetDateTime.now());
+        savedTransaction.setCreatedAt(createdAt);
+
+        TransactionResponse mappedResponse = new TransactionResponse();
+        mappedResponse.setId(100L);
+        mappedResponse.setCategoryId(categoryId);
+        mappedResponse.setAmountCents(-25000L);
+        mappedResponse.setCurrency("RUB");
+        mappedResponse.setOccurredAt(occurredAt);
+        mappedResponse.setNote("Продукты");
+        mappedResponse.setCreatedAt(createdAt);
 
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(categoryRepository.findByIdAndUser_Id(categoryId, userId)).thenReturn(Optional.of(category));
+        when(currencyConversionService.normalizeCurrency("rub")).thenReturn("RUB");
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTransaction);
+        when(transactionMapper.toResponse(savedTransaction)).thenReturn(mappedResponse);
 
         TransactionResponse response = transactionService.createTransaction(userId, request);
 
@@ -145,9 +166,19 @@ class TransactionServiceTest {
         transaction.setNote("Продукты");
         transaction.setCreatedAt(now);
 
+        TransactionResponse mappedResponse = new TransactionResponse();
+        mappedResponse.setId(1L);
+        mappedResponse.setCategoryId(1L);
+        mappedResponse.setAmountCents(-25000L);
+        mappedResponse.setCurrency("RUB");
+        mappedResponse.setOccurredAt(now);
+        mappedResponse.setNote("Продукты");
+        mappedResponse.setCreatedAt(now);
+
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId))
                 .thenReturn(List.of(transaction));
+        when(transactionMapper.toResponse(transaction)).thenReturn(mappedResponse);
 
         List<TransactionResponse> responses = transactionService.getAllByFilters(
                 userId,
@@ -163,9 +194,4 @@ class TransactionServiceTest {
         assertEquals(-25000L, responses.get(0).getAmountCents());
         assertEquals("RUB", responses.get(0).getCurrency());
     }
-    @Mock
-    private BalanceService balanceService;
-
-    @Mock
-    private CurrencyConversionService currencyConversionService;
 }

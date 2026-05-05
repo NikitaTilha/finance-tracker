@@ -26,19 +26,22 @@ public class TransactionServiceImpl implements TransactionService {
     private final CategoryRepository categoryRepository;
     private final BalanceService balanceService;
     private final CurrencyConversionService currencyConversionService;
+    private final TransactionMapper transactionMapper;
 
     public TransactionServiceImpl(
             TransactionRepository transactionRepository,
             UserRepository userRepository,
             CategoryRepository categoryRepository,
             BalanceService balanceService,
-            CurrencyConversionService currencyConversionService
+            CurrencyConversionService currencyConversionService,
+            TransactionMapper transactionMapper
     ) {
         this.transactionRepository = transactionRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.balanceService = balanceService;
         this.currencyConversionService = currencyConversionService;
+        this.transactionMapper = transactionMapper;
     }
 
     @Override
@@ -65,7 +68,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setNote(normalizeNote(request.getNote()));
 
         Transaction savedTransaction = transactionRepository.save(transaction);
-        return TransactionMapper.toResponse(savedTransaction);
+        return transactionMapper.toResponse(savedTransaction);
     }
 
     @Override
@@ -90,7 +93,7 @@ public class TransactionServiceImpl implements TransactionService {
         if (categoryId == null && currency == null && dateFrom == null && dateTo == null) {
             return transactionRepository.findAllByUser_IdOrderByOccurredAtDescIdDesc(userId)
                     .stream()
-                    .map(TransactionMapper::toResponse)
+                    .map(transactionMapper::toResponse)
                     .toList();
         }
 
@@ -106,7 +109,7 @@ public class TransactionServiceImpl implements TransactionService {
                         dateTo
                 )
                 .stream()
-                .map(TransactionMapper::toResponse)
+                .map(transactionMapper::toResponse)
                 .toList();
     }
 
@@ -135,7 +138,7 @@ public class TransactionServiceImpl implements TransactionService {
         transaction.setOccurredAt(request.getOccurredAt());
         transaction.setNote(normalizeNote(request.getNote()));
 
-        return TransactionMapper.toResponse(transaction);
+        return transactionMapper.toResponse(transaction);
     }
 
     @Override
